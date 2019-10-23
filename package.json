@@ -1,0 +1,38 @@
+{
+  "name": "SCM-Api",
+  "version": "1.0.0",
+  "description": "SCM (Savings Club Manager) is a tool to manage savings club activities like tracking loans, payments, profits, individual accounts etc",
+  "main": "app.js",
+  "scripts": {
+    "build": "npm run clean && mkdir dist && babel app.js -s -d dist",
+    "clean": "rm -rf dist",
+    "dev": "nodemon app.js --exec babel-node",
+    "start": "npm run build && node dist/app.js",
+    "lint": "./node_modules/.bin/eslint --fix src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zellymiriam/SCM-Api.git"
+  },
+  "keywords": [],
+  "author": "Miriam Nakiwuge",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zellymiriam/SCM-Api/issues"
+  },
+  "homepage": "https://github.com/zellymiriam/SCM-Api#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.7.6"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/node": "^7.6.3",
+    "@babel/preset-env": "^7.6.3",
+    "eslint": "^6.5.1",
+    "nodemon": "^1.19.4"
+  }
+}

@@ -4,11 +4,13 @@
   "description": "SCM (Savings Club Manager) is a tool to manage savings club activities like tracking loans, payments, profits, individual accounts etc",
   "main": "app.js",
   "scripts": {
-    "build": "npm run clean && mkdir dist && babel app.js -s -d dist",
     "clean": "rm -rf dist",
-    "dev": "nodemon app.js --exec babel-node",
+    "build": "npm run clean && mkdir dist && babel src -s -d dist",
     "start": "npm run build && node dist/app.js",
-    "lint": "./node_modules/.bin/eslint --fix src"
+    "dev": "nodemon src/app.js --exec babel-node",
+    "migrate": "node ./src/database/createTables",
+    "lint": "./node_modules/.bin/eslint --fix src",
+    "test": "node ./test"
   },
   "repository": {
     "type": "git",
@@ -22,16 +24,21 @@
   },
   "homepage": "https://github.com/zellymiriam/SCM-Api#readme",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "mongoose": "^5.7.6"
+    "pg": "^7.12.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.4",
     "@babel/core": "^7.6.4",
     "@babel/node": "^7.6.3",
+    "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/preset-env": "^7.6.3",
+    "@babel/runtime": "^7.7.2",
+    "babel-core": "^6.26.3",
+    "babel-polyfill": "^6.26.0",
     "eslint": "^6.5.1",
     "nodemon": "^1.19.4"
   }

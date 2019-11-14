@@ -8,7 +8,7 @@ import db from '../database/config';
  *
  * @return {Object}
  */
-export  const getRole = async (id)=>{
+export  const getRole = async (id: string)=>{
   const text = 'SELECT * FROM roles WHERE id=$1';
   const values = [id];
 

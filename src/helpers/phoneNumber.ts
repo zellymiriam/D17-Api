@@ -8,7 +8,7 @@ import db from '../database/config';
  *
  * @return {Object}
  */
-export  const getPhoneNumber = async (phoneNumber)=>{
+export  const getPhoneNumber = async (phoneNumber: string)=>{
   const text = 'SELECT phone_number FROM users WHERE phone_number=$1';
   const values = [phoneNumber];
 
@@ -21,7 +21,7 @@ export  const getPhoneNumber = async (phoneNumber)=>{
   }
 };
 
-export const validatePhoneNunber=(phoneNumber)=>{
+export const validatePhoneNunber=(phoneNumber: string)=>{
   const match = /^\d+$/.test(phoneNumber);
 
   return match && phoneNumber.length===10;

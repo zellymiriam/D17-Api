@@ -1,5 +1,5 @@
 import express from 'express';
-import  dotenv from  'dotenv';
+import dotenv from 'dotenv';
 import cors from 'cors';
 import routes from './routes';
 import bodyParser from 'body-parser';
@@ -8,7 +8,7 @@ import createTables from './database/createTables';
 dotenv.config();
 
 const app = express();
-const server = async ()=>{
+const server = async () => {
   await createTables();
 
   app.use(cors());
@@ -18,8 +18,8 @@ const server = async ()=>{
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
-  // eslint-disable-next-line no-console
-    console.log('now listening for requests on port ' + port);
+    // eslint-disable-next-line no-console
+    console.log('now listening for requests on port hhhhh' + port);
   });
 };
 server();

@@ -14,7 +14,7 @@ class Validation {
      *
      * @return {String} It returns the error message
      */
-  static  isRequired(data){
+  static  isRequired(data: any){
     let error;
 
     Object.keys(data).forEach((key)=>{
@@ -29,4 +29,5 @@ class Validation {
     return error;
   }
 }
+
 export default Validation;

@@ -1,3 +1,5 @@
+import { Response } from 'express';
+
 /**
  * Handles errors.
  * @func
@@ -10,7 +12,7 @@
  *
  * @return {Object}
  */
-export  const errorHandler = (res,  error, statusCode=400)=>{
+export  const errorHandler = (res: Response,  error: string, statusCode=400)=>{
 
   return res.status(statusCode).send({
     success:false,

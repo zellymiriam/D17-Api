@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const Pool = require('pg').Pool;
-const dotenv = require('dotenv');
+import  {Pool} from 'pg';
+import  dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -12,6 +12,6 @@ pool.connect()
   .then(()=>
     console.log('connected to database')
   )
-  .catch((e)=>  console.log('error'+e));
+  .catch((e: any)=>  console.log('error'+e));
 
-module.exports = pool;
+export default pool;

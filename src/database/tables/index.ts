@@ -5,8 +5,10 @@ export const Users = `CREATE TABLE IF NOT EXISTS
          last_name VARCHAR(50) NOT NULL,
          email VARCHAR(50)  UNIQUE,
          phone_number VARCHAR(15) NOT NULL  UNIQUE,
+         password  VARCHAR(50),
          prifile_picture VARCHAR(100),
          role uuid REFERENCES roles(id) ON DELETE RESTRICT,
+         is_Verified BOOLEAN NOT NULL DEFAULT false,
          create_at DATE NOT NULL DEFAULT CURRENT_DATE,
          updated_at DATE NOT NULL DEFAULT CURRENT_DATE
      )

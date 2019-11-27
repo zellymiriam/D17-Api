@@ -1,24 +1,20 @@
-import db from '../database/config';
+import { Response } from 'express';
+import dbQuery from '../helpers/queries'
 
 /**
  * Gets phnone number.
- * @func
+ * @func getPhoneNumber
  *
  * @param {String}   phoneNumber
  *
  * @return {Object}
  */
-export  const getPhoneNumber = async (phoneNumber: string)=>{
-  const text = 'SELECT phone_number FROM users WHERE phone_number=$1';
+export  const getPhoneNumber = async (res: Response, phoneNumber: string)=>{
+  const text = 'SELECT phone_number,id FROM users WHERE phone_number=$1';
   const values = [phoneNumber];
+  const result = await dbQuery(res,text,values)
 
-  try {
-    const result = await db.query(text, values);
-
-    return { data:result.rows[0] };
-  } catch (error) {
-    return { error:error.message };
-  }
+  return result;
 };
 
 export const validatePhoneNunber=(phoneNumber: string)=>{

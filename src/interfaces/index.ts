@@ -8,4 +8,5 @@ export interface userRequest extends Request {
   headers: {
     code: string;
   };
+  file: string;
 }

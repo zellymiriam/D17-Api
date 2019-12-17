@@ -46,6 +46,40 @@ class Validation {
     });
     return error;
   }
+
+  /**
+     * validates password.
+     *
+     *  @param {String} pwd    password to be validated
+     *
+     * @return {String} It returns the error message
+     */
+  static  validatePassword(password: string,confirmPassword: string){
+    const re = '(?=.*?[0-9])(?=.*?[A-Za-z]).+'
+    const validate = Validation.isRequired({password,confirmPassword})
+
+    if(validate){
+      return validate
+    }
+    if (password.length<6){
+      return 'Password should have atleast 6 characters';
+    }
+
+    if (!password.match(re)){
+      return 'Password should contain atleat 1 letter and 1 number';
+    }
+    if (password!==confirmPassword){
+      return 'Passwords do not match';
+    }
+  }
+
+  static  isEmail(email: string){
+    const re = /^\S+@\S+\.\S+$/
+
+    if (!email.match(re)){
+      return 'Invalid email';
+    }
+  }
 }
 
 export default Validation;

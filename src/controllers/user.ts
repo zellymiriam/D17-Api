@@ -80,7 +80,7 @@ class User {
 
     sendCode(phoneNumber,code).then(async (result: any)=>{
       if (result.body){
-        const token = await generateToken(res,{phoneNumber,code})
+        const token = await generateToken(res,{phoneNumber,code},'300000')
 
         return resHandler(res,true,token,200);
       }
@@ -100,6 +100,7 @@ class User {
  * @return {Response}
  */
   static async verifyUser(expressRequest: Request,res: Response){
+    // @ts-ignore
     const req = expressRequest as userRequest;
     const {code} = req.headers
     const{verificationCode}=req.body
@@ -139,6 +140,7 @@ class User {
  * @return {Response}
  */
   static async updateProfile(expressRequest: Request,res: Response){
+    /// @ts-ignore
     const req = expressRequest as userRequest;
     const{firstName,lastName,email}=req.body
     let imageUrl
@@ -168,7 +170,7 @@ class User {
 
   /**
  * set user password
- * @func updateProfile
+ * @func setPassword
  *
  * @param {object}   req
  *
@@ -198,6 +200,49 @@ class User {
 
         return resHandler(res,true,result,200);
       }).catch((err)=>{
+        return resHandler(res,true,err.message,400);
+      })
+  }
+
+  /**
+ * login a user
+ * @func login
+ *
+ * @param {object}   req
+ *
+ * @param {Object}   res
+ *
+ * @return {Response}
+ */
+  static async login(req: Request,res: Response){
+    const{password, phoneNumber}=req.body
+    const text = 'SELECT * FROM users WHERE phone_number=$1';
+    const values = [phoneNumber];
+    const validate = isRequired({ password, phoneNumber });
+
+    if(validate){
+      return resHandler(res,false,validate);
+    }
+
+    const user = await dbQuery(res,text,values)
+
+    if(user.is_verified==false){
+      return resHandler(res,false,'Please verify your account first');
+    }
+
+    if(!user || !user.password){
+      return resHandler(res,false,'Wrong password or phone number');
+    }
+
+    bcrypt.compare(password, user.password).then(async resp => {
+      if(resp){
+        const token = await generateToken(res,{id:user.id,role:user.role},'12h')
+        await delete user.password
+
+        return resHandler(res,true,{token,user},200);
+      }
+    })
+      .catch((err)=>{
         return resHandler(res,true,err.message,400);
       })
   }

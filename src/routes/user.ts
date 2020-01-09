@@ -1,11 +1,13 @@
 import { Router }  from 'express';
 import User from '../controllers/user';
 import { upload }from '../middlewares/multer';
-
+import verifyToken from '../middlewares/verifyToken'
+import {isAdmin} from '../middlewares/role'
 const router = Router();
-const { addUser, verifyUser, sendVerificationCode, updateProfile,setPassword } = User;
+const { addUser, verifyUser, sendVerificationCode, updateProfile,setPassword,login } = User;
 
-router.post('/admin/users', addUser);
+router.post('/admin/users', verifyToken,isAdmin, addUser);
+router.post('/users/login', login);
 router.post('/users/send-code', sendVerificationCode,verifyUser);
 router.put('/users/verify', verifyUser);
 router.put('/users/profile/:id', upload, updateProfile);

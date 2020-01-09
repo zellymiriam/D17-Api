@@ -4,9 +4,9 @@ import { resHandler } from './resHandler';
 
 const secretKey = process.env.SECRET_KEY
 
-export const generateToken = async (res: Response, data: any)=>{
+export const generateToken = async (res: Response, data: any, exp: string)=>{
   try {
-    const token =  await jwt.sign(data, secretKey!, { expiresIn: '300000' })
+    const token =  await jwt.sign(data, secretKey!, { expiresIn: exp })
     return token
   } catch (error) {
     return resHandler(res,false,error.message)

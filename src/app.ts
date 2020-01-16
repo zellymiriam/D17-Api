@@ -3,14 +3,12 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import routes from './routes';
 import bodyParser from 'body-parser';
-import createTables from './database/createTables';
 import {  cloudinaryConfig } from './config/cloudinary';
 
 dotenv.config();
 
 const app = express();
 const server = async () => {
-  await createTables();
   app.use('*', cloudinaryConfig);
   app.use(cors());
   app.use(bodyParser.json());

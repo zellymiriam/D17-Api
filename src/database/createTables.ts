@@ -1,13 +1,46 @@
+/* eslint-disable no-console */
 import db from './config';
-import { Users,Roles } from './tables';
+import { tables, alterTables } from './tables';
 
-const createTables = async ()=>{
-  await  db.query(Roles, (err: any, res: any) => {
-    if (err){throw err;}
-  });
-  await  db.query(Users, (err: any, res: any) => {
-    if (err){throw err;}
-  });
-};
+export const createTables = ()=>{
+  const tablesPromise= new Promise((resolve, reject) => {
 
-export default createTables;
+    db.query(tables, (err: any,  res: any ) => {
+      if (err) {
+        throw err;
+      }
+
+      resolve('Successfuly created tables')
+    })
+  })
+  tablesPromise.then((successMessage) => {
+    console.log(successMessage)
+  });
+
+  return tablesPromise
+}
+
+export const alterTablesQuery =()=>{
+  const alterPromise =new Promise((resolve, reject) => {
+    db.query(alterTables, (err: any,  res: any ) => {
+      if (err) {
+        throw err;
+      }
+
+      resolve('Successfully altered tables')
+    })
+  })
+  alterPromise.then((successMessage) => {
+    console.log(successMessage)
+  });
+
+  return alterPromise
+}
+
+const runMigrations =  async()=>{
+  await createTables()
+  await alterTablesQuery()
+  process.exit(0)
+}
+
+runMigrations();

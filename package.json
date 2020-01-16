@@ -1,5 +1,5 @@
 {
-  "name": "SCM-Api",
+  "name": "scm-api",
   "version": "1.0.0",
   "description": "SCM (Savings Club Manager) is a tool to manage savings club activities like tracking loans, payments, profits, individual accounts etc",
   "main": "app.js",
@@ -7,7 +7,8 @@
     "build": "tsc -p .",
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
-    "migrate": "node ./src/database/createTables",
+    "migrate": "ts-node ./src/database/createTables.ts",
+    "prod-migrate": "node ./dist/database/createTables.js",
     "lint": "./node_modules/.bin/eslint --fix src/**/*.ts",
     "test": "node ./test"
   },
@@ -46,7 +47,7 @@
     "@typescript-eslint/parser": "^2.7.0",
     "eslint": "^6.6.0",
     "nodemon": "^1.19.4",
-    "ts-node": "^8.5.0",
+    "ts-node": "^8.6.2",
     "typescript": "^3.7.2"
   }
 }

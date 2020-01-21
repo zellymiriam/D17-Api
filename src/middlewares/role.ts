@@ -24,3 +24,26 @@ export  const isAdmin = async (req: any,res: any ,next: any)=>{
     return { error:error.message };
   }
 }
+
+/**
+ * Gets a role.
+ * @func
+ *
+ * @param {String}   id
+ *
+ * @return {Object}
+ */
+export  const isTreasurer = async (req: any,res: any ,next: any)=>{
+  try {
+    const role = await getRole(req.user.role)
+    const {data} = role
+
+    if (data!.name ==='admin' || data!.name==='superAdmin' || data!.name==='treasurer'){
+      return  next()
+    }
+    return resHandler(res,false,'You are not authorized to perform this action.', 401)
+
+  } catch (error) {
+    return { error:error.message };
+  }
+}

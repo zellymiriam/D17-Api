@@ -80,6 +80,14 @@ class Validation {
       return 'Invalid email';
     }
   }
+
+  static  validateTransactionType(data: string){
+    const types = ['Deposit','Loan','Fine']
+
+    if (!types.includes(data)){
+      return 'type should be Deposit, or Loan or Fine';
+    }
+  }
 }
 
 export default Validation;

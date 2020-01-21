@@ -10,7 +10,7 @@ router.post('/admin/users', verifyToken,isAdmin, addUser);
 router.post('/users/login', login);
 router.post('/users/send-code', sendVerificationCode,verifyUser);
 router.put('/users/verify', verifyUser);
-router.put('/users/profile/:id', upload, updateProfile);
+router.put('/users/profile/:id', verifyToken,upload, updateProfile);
 router.put('/users/set-password/:id', setPassword);
 
 export default router;

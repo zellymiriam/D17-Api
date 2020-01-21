@@ -9,6 +9,10 @@ export interface userRequest extends Request {
     code: string;
   };
   file: string;
+  user: {
+    id: string;
+    role: string;
+  };
 }
 
 export interface RoleType {

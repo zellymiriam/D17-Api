@@ -10,12 +10,11 @@ import sendCode from '../helpers/sendVerificationCode';
 import {generateToken ,decodeToken}from '../helpers/jwtToken'
 import dbQuery from '../helpers/queries'
 import { getUser } from '../helpers/user';
-// @ts-ignore
 import { uploader } from '../config/cloudinary';
 import { dataUri } from '../middlewares/multer';
 
 const { isRequired, isNumber,validatePassword, isEmail } = Validation;
-const today = new Date();
+const today = new Date()
 /**
  * Handles user CRUD.
  * @class
@@ -100,7 +99,6 @@ class User {
  * @return {Response}
  */
   static async verifyUser(expressRequest: Request,res: Response){
-    // @ts-ignore
     const req = expressRequest as userRequest;
     const {code} = req.headers
     const{verificationCode}=req.body
@@ -140,7 +138,6 @@ class User {
  * @return {Response}
  */
   static async updateProfile(expressRequest: Request,res: Response){
-    /// @ts-ignore
     const req = expressRequest as userRequest;
     const{firstName,lastName,email}=req.body
     let imageUrl
@@ -151,9 +148,14 @@ class User {
       return resHandler(res,false,'User not found',404);
     }
 
+    if(user.data.id !== req.user.id){
+      return resHandler(res,false,'You cannot edit another person`s profile',400);
+    }
+
     if(validate){
       return resHandler(res,false,validate);
     }
+
     if(req.file){
       const file = dataUri(req).content;
       const result = await uploader.upload(file);
@@ -230,12 +232,13 @@ class User {
 
     const user = await dbQuery(res,text,values)
 
-    if(user.is_verified==false){
-      return resHandler(res,false,'Please verify your account first');
-    }
 
     if(!user || !user.password){
       return resHandler(res,false,'Wrong password or phone number');
+    }
+
+    if(user.is_verified==false){
+      return resHandler(res,false,'Please verify your account first');
     }
 
     bcrypt.compare(password, user.password).then(async resp => {

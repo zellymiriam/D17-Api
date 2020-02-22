@@ -12,8 +12,9 @@ import dbQuery from '../helpers/queries'
 import { getUser } from '../helpers/user';
 import { uploader } from '../config/cloudinary';
 import { dataUri } from '../middlewares/multer';
+import db from '../database/config';
 
-const { isRequired, isNumber,validatePassword, isEmail } = Validation;
+const { isRequired, validatePassword, isEmail } = Validation;
 const today = new Date()
 /**
  * Handles user CRUD.
@@ -53,6 +54,72 @@ class User {
   }
 
   /**
+ * Handles getting a user.
+ * @func getUser
+ *
+ * @param {object}   req
+ *
+ * @param {Object}   res
+ *
+ * @return {Response}
+ */
+  static async getUser(req: Request,res: Response){
+    const text = `
+  SELECT
+    users.id id,
+    email,
+    first_name,
+    last_name,
+    phone_number,
+    is_verified,
+    account_balance,
+    roles.id role_id,
+    roles.name role_name,
+    profile_picture,
+    users.created_at created_at
+    FROM roles INNER JOIN users ON (users.role = roles.id)
+    Where users.id=$1
+  `
+
+    const values = [req.params.id];
+    const result = await db.query(text, values)
+
+    return resHandler(res,true,result.rows[0],200);
+  }
+
+  /**
+ * Handles getting a user.
+ * @func getUser
+ *
+ * @param {object}   req
+ *
+ * @param {Object}   res
+ *
+ * @return {Response}
+ */
+  static async getUsers(req: Request,res: Response){
+    const text = `
+SELECT
+  users.id id,
+  email,
+  first_name,
+  last_name,
+  phone_number,
+  is_verified,
+  account_balance,
+  roles.id role_id,
+  roles.name role_name,
+  profile_picture,
+  users.created_at created_at
+  FROM roles INNER JOIN users ON (users.role = roles.id)
+`
+
+    const result = await db.query(text)
+
+    return resHandler(res,true,result.rows,200);
+  }
+
+  /**
  * Handles sending a verification code to the users number.
  * @func sendVerificationCode
  *
@@ -84,6 +151,11 @@ class User {
         return resHandler(res,true,token,200);
       }
     }).catch((err: any)=>{
+      if (err.message.includes('unverified numbers')){
+
+        return resHandler(res,false,'Invalid Phone Number')
+      }
+
       return resHandler(res,false,err.message)
     })
   }
@@ -102,7 +174,7 @@ class User {
     const req = expressRequest as userRequest;
     const {code} = req.headers
     const{verificationCode}=req.body
-    const validate = isNumber({ verificationCode });
+    const validate = isRequired({ verificationCode });
 
     if (!code){
       return resHandler(res,false,'missing code header')
@@ -116,7 +188,7 @@ class User {
       return;
     }
 
-    if(decoded.code!==verificationCode){
+    if(decoded.code!==parseInt(verificationCode)){
       return resHandler(res,false,'Invalid code')
     }
 
@@ -232,7 +304,6 @@ class User {
 
     const user = await dbQuery(res,text,values)
 
-
     if(!user || !user.password){
       return resHandler(res,false,'Wrong password or phone number');
     }
@@ -248,8 +319,10 @@ class User {
 
         return resHandler(res,true,{token,user},200);
       }
+      return resHandler(res,false,'Wrong Password or Phone number');
     })
       .catch((err)=>{
+
         return resHandler(res,true,err.message,400);
       })
   }
@@ -285,7 +358,8 @@ const handleChecks = async( res: Response,data: any)=>{
   if(userRole.error){
     return 'Role does not exist';
   }
-  if(phoneNumberExists&&phoneNumberExists.data){
+  if(phoneNumberExists){
+
     return 'Phone number already exists';
   }
 };

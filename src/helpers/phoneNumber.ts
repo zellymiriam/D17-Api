@@ -14,7 +14,7 @@ export  const getPhoneNumber = async (res: Response, phoneNumber: string)=>{
   const values = [phoneNumber];
   const result = await dbQuery(res,text,values)
 
-  return result;
+  return result
 };
 
 export const validatePhoneNunber=(phoneNumber: string)=>{

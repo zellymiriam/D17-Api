@@ -48,6 +48,9 @@
     "eslint": "^6.6.0",
     "nodemon": "^1.19.4",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.2"
+    "typescript": "^3.8.2"
+  },
+  "engines": {
+    "node": "12.x.x"
   }
 }

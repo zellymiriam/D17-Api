@@ -1,49 +1,35 @@
-import { getRole } from '../helpers/role';
 import { resHandler } from '../helpers/resHandler';
 
 /**
- * Gets a role.
+ * Checks user if user is allowed to access endpoint.
  * @func
  *
  * @param {String}   id
  *
  * @return {Object}
  */
-export  const isAdmin = async (req: any,res: any ,next: any)=>{
 
-  try {
-    const role = await getRole(req.user.role)
-    const {data} = role
+export  const isPermitted =  (roles: Array<string>)=>{
 
-    if (data!.name ==='admin' || data!.name==='superAdmin'){
-      return  next()
+  const isAllowed = async (req: any) =>{
+    try {
+      const {name} = req.user.role
+      if(roles.includes(name)){
+        return  true
+      }
+      return false
+
+    } catch (error) {
+      return false;
     }
-    return resHandler(res,false,'You are not authorized to perform this action.', 401)
-
-  } catch (error) {
-    return { error:error.message };
   }
-}
-
-/**
- * Gets a role.
- * @func
- *
- * @param {String}   id
- *
- * @return {Object}
- */
-export  const isTreasurer = async (req: any,res: any ,next: any)=>{
-  try {
-    const role = await getRole(req.user.role)
-    const {data} = role
-
-    if (data!.name ==='admin' || data!.name==='superAdmin' || data!.name==='treasurer'){
-      return  next()
+ 
+  return async (req: any,res: any ,next: any)=>{
+    const permit = await isAllowed(req)
+    if(permit ){
+      return next()
     }
-    return resHandler(res,false,'You are not authorized to perform this action.', 401)
 
-  } catch (error) {
-    return { error:error.message };
+    return resHandler(res,false,'You are not allowed to perform this action.', 403)
   }
 }

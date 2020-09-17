@@ -17,7 +17,7 @@ export  const getPhoneNumber = async (res: Response, phoneNumber: string)=>{
   return result
 };
 
-export const validatePhoneNunber=(phoneNumber: string)=>{
+export const validatePhoneNumber=(phoneNumber: string)=>{
   const match = /^\d+$/.test(phoneNumber);
 
   return match && phoneNumber.length===10;

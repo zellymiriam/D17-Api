@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import  bcrypt from  'bcrypt';
 import Validation from '../helpers/validation';
 import { getRole } from '../helpers/role';
-import { getPhoneNumber, validatePhoneNunber } from '../helpers/phoneNumber';
+import { getPhoneNumber, validatePhoneNumber } from '../helpers/phoneNumber';
 import { resHandler } from '../helpers/resHandler';
 import { userRequest } from '../interfaces';
 import sendCode from '../helpers/sendVerificationCode';
@@ -82,14 +82,22 @@ class User {
   `
 
     const values = [req.params.id];
-    const result = await db.query(text, values)
+    const result:any = await db.query(text, values)
+    const {role_name,role_id, ...rest}=  result.rows[0]
+    const userData = {
+      ...rest,
+      role:{
+        id:role_id,
+        name:role_name
+      }
+    }
 
-    return resHandler(res,true,result.rows[0],200);
+    return resHandler(res,true,userData,200);
   }
 
   /**
  * Handles getting a user.
- * @func getUser
+ * @func getUsers
  *
  * @param {object}   req
  *
@@ -111,7 +119,7 @@ SELECT
   roles.name role_name,
   profile_picture,
   users.created_at created_at
-  FROM roles INNER JOIN users ON (users.role = roles.id)
+  FROM roles INNER JOIN users ON (users.role = roles.id) 
 `
 
     const result = await db.query(text)
@@ -152,7 +160,6 @@ SELECT
       }
     }).catch((err: any)=>{
       if (err.message.includes('unverified numbers')){
-
         return resHandler(res,false,'Invalid Phone Number')
       }
 
@@ -255,14 +262,16 @@ SELECT
   static async setPassword(req: Request,res: Response){
     const{password, confirmPassword}=req.body
     const saltRounds = 10;
+
     const validate = validatePassword(password, confirmPassword)
     const user = await getUser(req.params.id)
 
-    if(!user.data.is_verified){
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    if(!user?.data?.is_verified){
       return resHandler(res,false,'Please verify your phone number',400);
     }
 
-    if(!user.data){
+    if(!user?.data){
       return resHandler(res,false,'User not found',404);
     }
 
@@ -294,17 +303,32 @@ SELECT
  */
   static async login(req: Request,res: Response){
     const{password, phoneNumber}=req.body
-    const text = 'SELECT * FROM users WHERE phone_number=$1';
+    const text = `
+    SELECT
+      users.id id,
+      email,
+      first_name,
+      last_name,
+      password,
+      phone_number,
+      is_verified,
+      roles.id role_id,
+      roles.name role_name
+      FROM roles INNER JOIN users ON (users.role = roles.id)
+      WHERE phone_number=$1
+    `
     const values = [phoneNumber];
     const validate = isRequired({ password, phoneNumber });
 
     if(validate){
       return resHandler(res,false,validate);
     }
-
+    
     const user = await dbQuery(res,text,values)
 
-    if(!user || !user.password){
+
+    if(!user || !user?.password){
+
       return resHandler(res,false,'Wrong password or phone number');
     }
 
@@ -313,11 +337,26 @@ SELECT
     }
 
     bcrypt.compare(password, user.password).then(async resp => {
+      const tokenData ={
+        id:user.id,
+        role:{
+          id:user.role_id, 
+          name:user.role_name
+        }
+      }
       if(resp){
-        const token = await generateToken(res,{id:user.id,role:user.role},'12h')
-        await delete user.password
+        const token = await generateToken(res,tokenData,'12h')
+        delete user.password
+        const {role_name,role_id, ...rest}=  user
+        const userData = {
+          ...rest,
+          role:{
+            id:role_id,
+            name:role_name
+          }
+        }
 
-        return resHandler(res,true,{token,user},200);
+        return resHandler(res,true,{token,user:userData},200);
       }
       return resHandler(res,false,'Wrong Password or Phone number');
     })
@@ -337,15 +376,19 @@ SELECT
  * @return {String}
  */
 const handleChecks = async( res: Response,data: any)=>{
+
   const { email,phoneNumber,role, accountBalance } = data;
-  const validate = isRequired({ email,phoneNumber,role, accountBalance});
-  const validateEmail = isEmail(email)
+  const validate = isRequired({ email,phoneNumber,role});
+  const validateEmail = email && isEmail(email)
   const userRole = await getRole(role);
   const phoneNumberExists = await getPhoneNumber(res,phoneNumber);
-  const isValidPhoneNumber = validatePhoneNunber(phoneNumber);
+  const isValidPhoneNumber = validatePhoneNumber(phoneNumber);
 
   if (validate){
     return validate;
+  }
+  if(isNaN(accountBalance)){
+    return 'Account balance should be a number';
   }
   if (validateEmail){
     return validateEmail;

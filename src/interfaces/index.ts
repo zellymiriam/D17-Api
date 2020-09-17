@@ -11,7 +11,7 @@ export interface userRequest extends Request {
   file: string;
   user: {
     id: string;
-    role: string;
+    role:RoleType;
   };
 }
 

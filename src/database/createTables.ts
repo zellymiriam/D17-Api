@@ -21,7 +21,7 @@ export const createTables = ()=>{
 }
 
 export const alterTablesQuery =()=>{
-  const alterPromise =new Promise((resolve, reject) => {
+  const alterPromise  =new Promise((resolve, reject) => {
     db.query(alterTables, (err: any,  res: any ) => {
       if (err) {
         throw err;

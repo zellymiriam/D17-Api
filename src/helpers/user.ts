@@ -13,9 +13,9 @@ export  const getUser = async (id: string)=>{
   const values = [id];
 
   try {
-    const role = await db.query(text, values);
+    const user = await db.query(text, values);
 
-    return { data:role.rows[0] };
+    return { data:user.rows[0] };
   } catch (error) {
     return { error:error.message };
   }

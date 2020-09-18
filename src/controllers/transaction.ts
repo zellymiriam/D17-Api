@@ -59,7 +59,54 @@ class Transaction {
   }
 
   /**
- * Handles viewing  transactions
+ * Handles viewing  user transactions
+ * @func
+ *
+ * @param {object}   req
+ *
+ * @param {Object}   res
+ *
+ * @return {Response}
+ */
+  static async getUserTransactions(expressRequest: Request,res: Response){
+    const req = expressRequest as userRequest;
+    const {params,user} = req
+
+    const text  =`SELECT
+          users.id as user_id,
+          transactions.id as transaction_id,
+          first_name,
+          last_name,
+          email,
+          amount,
+          phone_number,
+          type,
+          made_by,
+          transactions.created_at
+          FROM users
+          INNER JOIN transactions ON transactions.user_id = users.id
+          WHERE user_id=$1 AND is_deleted=false
+          ORDER BY transactions.created_at DESC
+          `
+
+    const values = [params.userId];
+    const { name } = user.role
+
+    if(user.id!==params.userId 
+      && !(name ==='admin' || name==='superAdmin')){
+      return resHandler(res,false,'You are not allowed to perform this action',403);
+    }    
+
+    const result = await db.query(text, values)
+
+    if(!result){
+      return resHandler(res,true,[],200);
+    }
+    return resHandler(res,true,result.rows,200);
+  }
+
+  /**
+ * Handles viewing all transactions
  * @func
  *
  * @param {object}   req
@@ -70,7 +117,6 @@ class Transaction {
  */
   static async getTransactions(expressRequest: Request,res: Response){
     const req = expressRequest as userRequest;
-    const {user,params} = req
 
     const text = `SELECT
                   users.id as user_id,
@@ -88,44 +134,13 @@ class Transaction {
                   WHERE is_deleted=false
                   ORDER BY transactions.created_at DESC`
 
+    const result = await db.query(text)
 
-
-    if (params.action === 'one-user'){
-      const newtext  =`SELECT
-            users.id as user_id,
-            transactions.id as transaction_id,
-            first_name,
-            last_name,
-            email,
-            amount,
-            phone_number,
-            type,
-            made_by,
-            transactions.created_at
-            FROM users
-            INNER JOIN transactions ON transactions.user_id = users.id
-            WHERE user_id=$1 AND is_deleted=false
-            ORDER BY transactions.created_at DESC
-            `
-
-      const newvalues = [user.id];
-      const result = await db.query(newtext, newvalues)
-
-      if(!result){
-        return resHandler(res,true,[],200);
-      }
-      return resHandler(res,true,result.rows,200);
+    if(!result){
+      return resHandler(res,true,[],200);
     }
 
-    if (params.action === 'all'){
-      const result = await db.query(text)
-
-      if(!result){
-        return resHandler(res,true,[],200);
-      }
-      return resHandler(res,true,result.rows,200);
-    }
-    return resHandler(res,false,'Not found', 404);
+    return resHandler(res,true,result.rows,200);
   }
 
   /**

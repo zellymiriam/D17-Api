@@ -31,6 +31,16 @@ CREATE TABLE IF NOT EXISTS
       created_at timestamp  NOT NULL DEFAULT current_timestamp,
       updated_at timestamp  NOT NULL DEFAULT current_timestamp
   );
+  CREATE TABLE IF NOT EXISTS
+  loans(
+      id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+      amount NUMERIC (20) NOT NULL,
+      interest_rate NUMERIC (20) NOT NULL,
+      balance NUMERIC (20) NOT NULL,
+      is_deleted BOOLEAN NOT NULL DEFAULT false,
+      created_at timestamp  NOT NULL DEFAULT current_timestamp,
+      updated_at timestamp  NOT NULL DEFAULT current_timestamp
+  );
 COMMIT;
 `
 
@@ -40,6 +50,11 @@ BEGIN;
   IF NOT EXISTS role uuid REFERENCES roles(id)
   ON DELETE RESTRICT;
   ALTER TABLE transactions
+  ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES users(id)
+  ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS made_by uuid REFERENCES users(id)
+  ON DELETE CASCADE;
+  ALTER TABLE loans
   ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES users(id)
   ON DELETE CASCADE,
   ADD COLUMN IF NOT EXISTS made_by uuid REFERENCES users(id)

@@ -13,6 +13,6 @@ router.put('/users/verify', verifyUser);
 router.put('/users/profile/:id', verifyToken,upload, updateProfile);
 router.put('/users/set-password/:id', setPassword);
 router.get('/users/:id',verifyToken,getUser);
-router.get('/admin/users',verifyToken,isPermitted(['admin','superAdmin']), getUsers);
+router.get('/admin/users',verifyToken,isPermitted(['admin','superAdmin','treasurer']), getUsers);
 
 export default router;

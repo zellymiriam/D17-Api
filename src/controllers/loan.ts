@@ -7,7 +7,7 @@ import { userRequest } from '../interfaces';
 import { getTransaction } from '../helpers/transaction';
 import { getUser } from '../helpers/user';
 
-const { isRequired, validateTransactionType } = Validation;
+const { isRequired, isNumber } = Validation;
 const today = new Date()
 /**
  * Handles transaction CRUD.
@@ -16,11 +16,11 @@ const today = new Date()
  * @return {void}
  */
 
-class Transaction {
+class Loan {
 
   /**
- * Handles adding a transaction
- * @func addTransaction
+ * Handles adding a loan
+ * @func addLoan
  *
  * @param {object}   req
  *
@@ -28,14 +28,18 @@ class Transaction {
  *
  * @return {Response}
  */
-  static async addTransaction(expressRequest: Request,res: Response){
+  static async addLoan(expressRequest: Request,res: Response){
     const req = expressRequest as userRequest;
-    const { type,amount,user} = req.body;
-    const validate = isRequired({amount,user})
-    const validateType = validateTransactionType(type)
-    const text = 'INSERT INTO transactions(type,amount,user_id,made_by) VALUES($1,$2,$3,$4) RETURNING *';
-    const values = [type,amount,user,req.user.id];
+    const { user,amount,interest_rate} = req.body;
+    const validate = isRequired({user})
+    const isNotNumber = isNumber({amount,interest_rate})
+    const text = 'INSERT INTO loans(amount,user_id,interest_rate,balance,made_by) VALUES($1,$2,$3,$4,$5) RETURNING *';
+
     const userResp = await getUser(user)
+    const interest = interest_rate/100
+    const balance = Math.floor(amount*(interest+1))
+
+    const values = [amount, user,interest_rate,balance,req?.user?.id]
 
     if(!userResp.data){
       return resHandler(res,false,'User not found',404);
@@ -44,13 +48,8 @@ class Transaction {
     if (validate){
       return resHandler(res,false,validate);
     }
-    if (validateType){
-      return resHandler(res,false,validateType);
-    }
-    if (type==='Deposit'){
-      const newtext = 'UPDATE users SET account_balance=account_balance+$1,updated_at=$2 WHERE id=$3';
-      const newvalues = [amount,today,user];
-      db.query(newtext, newvalues)
+    if (isNotNumber){
+        return resHandler(res,false,isNotNumber);
     }
 
     const result = await dbQuery(res,text,values)
@@ -195,7 +194,7 @@ class Transaction {
       return resHandler(res,false,'Transaction not found',404);
     }
 
-    if (transaction.data.type==='Deposit'){
+    if (transaction.data.type==='D'){
       const newtext = 'UPDATE users SET account_balance=account_balance+$1,updated_at=$2 WHERE id=$3 ';
       const newvalues = [transaction.data.amount,today,transaction.data.user_id];
 
@@ -208,4 +207,4 @@ class Transaction {
   }
 }
 
-export default Transaction;
+export default Loan;

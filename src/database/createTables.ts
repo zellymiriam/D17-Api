@@ -5,14 +5,15 @@ import { tables, alterTables } from './tables';
 export const createTables = ()=>{
   const tablesPromise= new Promise((resolve, reject) => {
 
-    db.query(tables, (err: any,  res: any ) => {
-      if (err) {
-        throw err;
-      }
+  db.query(tables, (err: any,  res: any ) => {
+    if (err) {
+      throw err;
+    }
 
-      resolve('Successfuly created tables')
-    })
+    resolve('Successfuly created tables')
   })
+  })
+
   tablesPromise.then((successMessage) => {
     console.log(successMessage)
   });

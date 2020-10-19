@@ -37,7 +37,9 @@ CREATE TABLE IF NOT EXISTS
       amount NUMERIC (20) NOT NULL,
       interest_rate NUMERIC (20) NOT NULL,
       balance NUMERIC (20) NOT NULL,
+      type VARCHAR(100) NOT NULL,
       is_deleted BOOLEAN NOT NULL DEFAULT false,
+      reference VARCHAR(100) NOT NULL,
       created_at timestamp  NOT NULL DEFAULT current_timestamp,
       updated_at timestamp  NOT NULL DEFAULT current_timestamp
   );

@@ -6,17 +6,37 @@ import dbQuery from '../helpers/queries'
 import { userRequest } from '../interfaces';
 import { getTransaction } from '../helpers/transaction';
 import { getUser } from '../helpers/user';
+import QueryHelper from '../helpers/queryHelper';
 
 const { isRequired, isNumber } = Validation;
 const today = new Date()
+const query   = new QueryHelper()
 /**
- * Handles transaction CRUD.
+ * Handles Loans CRUD.
  * @class
  *
  * @return {void}
  */
 
 class Loan {
+
+  static _validate(req:userRequest,res:any, userData:any,type:string){
+    const { amount,interest_rate,reference} = req.body;
+    const validate = type==='payment'&&isRequired({reference})
+    const isNotNumber = type==='request'
+    ?isNumber({amount,interest_rate})
+    :isNumber({amount})
+    let error;
+  
+    if(!userData){
+      error = 'User not found'
+    }else if (validate){
+      error = validate
+    }else if(isNotNumber){
+      error = isNotNumber
+    }
+    return error
+  }
 
   /**
  * Handles adding a loan
@@ -28,29 +48,24 @@ class Loan {
  *
  * @return {Response}
  */
-  static async addLoan(expressRequest: Request,res: Response){
+ static async addLoan(expressRequest: Request,res: Response){
     const req = expressRequest as userRequest;
     const { user,amount,interest_rate} = req.body;
-    const validate = isRequired({user})
-    const isNotNumber = isNumber({amount,interest_rate})
-    const text = 'INSERT INTO loans(amount,user_id,interest_rate,balance,made_by) VALUES($1,$2,$3,$4,$5) RETURNING *';
+    const text = `INSERT INTO loans(amount,user_id,interest_rate,balance,made_by,type,reference)
+                   VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *`;
 
-    const userResp = await getUser(user)
+    const {data,error} = await getUser(user)
+
+    const isInvalid = Loan._validate(req,res,data,'request')
+
+    if(isInvalid) {
+     return  resHandler(res,false,isInvalid,400);
+    }
+
     const interest = interest_rate/100
     const balance = Math.floor(amount*(interest+1))
-
-    const values = [amount, user,interest_rate,balance,req?.user?.id]
-
-    if(!userResp.data){
-      return resHandler(res,false,'User not found',404);
-    }
-
-    if (validate){
-      return resHandler(res,false,validate);
-    }
-    if (isNotNumber){
-        return resHandler(res,false,isNotNumber);
-    }
+    const reference = Math.floor(Math.random() * Date.now())
+    const values = [amount, user,interest_rate,balance,req?.user?.id,'request',reference]
 
     const result = await dbQuery(res,text,values)
 
@@ -58,7 +73,7 @@ class Loan {
   }
 
   /**
- * Handles viewing  user transactions
+ * Handles loan payment
  * @func
  *
  * @param {object}   req
@@ -67,42 +82,56 @@ class Loan {
  *
  * @return {Response}
  */
-  static async getUserTransactions(expressRequest: Request,res: Response){
+  static async loanPayment(expressRequest: Request,res: Response){
     const req = expressRequest as userRequest;
-    const {params,user} = req
+    const { user,amount,reference} = req.body;
+    const text = `INSERT INTO loans(amount,user_id,interest_rate,balance,made_by,type,reference)
+                   VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *`;
 
-    const text  =`SELECT
-          users.id as user_id,
-          transactions.id as transaction_id,
-          first_name,
-          last_name,
-          email,
-          amount,
-          phone_number,
-          type,
-          made_by,
-          transactions.created_at
-          FROM users
-          INNER JOIN transactions ON transactions.user_id = users.id
-          WHERE user_id=$1 AND is_deleted=false
-          ORDER BY transactions.created_at DESC
-          `
-
-    const values = [params.userId];
-    const { name } = user.role
-
-    if(user.id!==params.userId 
-      && !(name ==='admin' || name==='superAdmin')){
-      return resHandler(res,false,'You are not allowed to perform this action',403);
-    }    
-
-    const result = await db.query(text, values)
-
-    if(!result){
-      return resHandler(res,true,[],200);
+    const {data} = await getUser(user)
+    const isInvalid = Loan._validate(req,res,data, 'payment')
+    
+    if(isInvalid) {
+      return resHandler(res,false,isInvalid,400);
     }
-    return resHandler(res,true,result.rows,200);
+
+    const loan = await dbQuery(res, 
+      `SELECT * from loans WHERE reference=$1 ORDER BY created_at DESC LIMIT 1`,
+      [reference]
+    )
+
+    if(!loan){
+      return resHandler(res,false,'Loan not found',400);
+    }
+    const balance = loan?.balance - amount
+    const values = [amount, user,loan?.interest_rate,balance,req?.user?.id,'payment', reference]
+
+    const result = await dbQuery(res,text,values)
+
+    return resHandler(res,true,result,201);
   }
+
+    /**
+   * Handles fetching loan transactions
+   * @func addLoan
+   *
+   * @param {object}   req
+   *
+   * @param {Object}   res
+   *
+   * @return {Response}
+   */
+  static async getLoanTransactions(expressRequest: Request,res: Response){
+
+    const {error,data} = await query.findAll('loans')
+
+    if(error){
+      return resHandler(res,true,error,400);
+    }
+
+    return resHandler(res,true,data,200);
+  }
+
 
   /**
  * Handles viewing all transactions
